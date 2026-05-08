@@ -23,7 +23,6 @@ const roomSchema = new mongoose.Schema({
     type: String, 
     required: [true, 'Địa chỉ là bắt buộc'] 
   },
-  // Để hỗ trợ PB05 (Bản đồ), chúng ta lưu tọa độ
   location: {
     lat: { type: Number },
     lng: { type: Number }
@@ -32,7 +31,7 @@ const roomSchema = new mongoose.Schema({
     type: [String], 
     default: ["https://placehold.co/600x400?text=TroSmart+Room"] 
   },
-  amenities: [String], // Ví dụ: ['Máy lạnh', 'Wifi', 'Gác lửng']
+  amenities: [String], 
   isVip: { 
     type: Boolean, 
     default: false 
@@ -40,14 +39,30 @@ const roomSchema = new mongoose.Schema({
   status: { 
     type: String, 
     enum: ['AVAILABLE', 'RENTED', 'PENDING', 'HIDDEN'], 
-    default: 'PENDING' // Mặc định chờ duyệt để AI parser hoạt động (PB12)
+    default: 'PENDING' 
   },
   phone: { 
     type: String, 
     required: [true, 'Số điện thoại liên hệ là bắt buộc'] 
+  },
+
+  // ==========================================
+  // THÊM CÁC TRƯỜNG PHỤC VỤ CRAWLER (PB12)
+  // ==========================================
+  postUrl: { 
+    type: String,
+    unique: true, // Thêm unique để DB tự chặn nếu cào trùng bài
+    sparse: true  // Cho phép null nếu đăng tin thủ công
+  },
+  source: { 
+    type: String 
   }
+  // ==========================================
+
 }, { 
-  timestamps: true // Tự động tạo createdAt và updatedAt (PB15)
+  timestamps: true 
 });
+
+// XÓA BỎ DÒNG: roomSchema.index({ postUrl: 1 }); <-- Xóa dòng này đi!
 
 module.exports = mongoose.model('Room', roomSchema);

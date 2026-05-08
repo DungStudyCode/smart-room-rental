@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { FaRobot, FaTimes, FaPaperPlane } from 'react-icons/fa';
 
 const ChatbotWidget = () => {
-  const [isOpen, setIsOpen] = useState(true); 
+  const [isOpen, setIsOpen] = useState(false); 
   const [input, setInput] = useState('');
   
   // Khởi tạo State chứa lịch sử tin nhắn

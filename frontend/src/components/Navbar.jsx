@@ -1,3 +1,4 @@
+// frontend/src/components/Navbar.jsx
 import { Link, useLocation } from 'react-router-dom';
 import { FaUserCircle } from 'react-icons/fa';
 
@@ -19,9 +20,9 @@ const Navbar = () => {
           {/* Menu Center */}
           <nav className="hidden md:flex space-x-8">
             <Link 
-              to="/" 
+              to="/tim-phong" // Sửa ở đây: Trỏ về đúng route /tim-phong
               className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                location.pathname === '/' 
+                location.pathname === '/tim-phong' // Sửa ở đây: Active khi ở trang Tìm phòng
                   ? 'border-purple-600 text-purple-700' 
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
