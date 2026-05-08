@@ -1,23 +1,29 @@
+// frontend/src/layouts/MainLayout.jsx
 import { Outlet } from 'react-router-dom';
+import Navbar from '../components/navbar/Navbar'; // Gọi Navbar thật
+import Footer from '../components/Footer'; // Gọi Footer thật
 import ChatbotWidget from '../components/ChatbotWidget';
 
 const MainLayout = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
       {/* Tạm thời để Navbar giả */}
+      
+      
+      {/* 1. Thanh Navbar chính thức */}
+      <Navbar />
 
-      {/* Nội dung các trang con sẽ được render ở thẻ Outlet này */}
-      <main className="flex-grow relative">
+      {/* 2. Nội dung các trang con (HomePage, FindRoom) sẽ hiển thị ở đây */}
+      <main className="flex-grow relative bg-white">
         <Outlet />
       </main>
 
-      {/* Tạm thời để Footer giả */}
-      <footer className="bg-gray-900 text-gray-400 p-6 text-center text-sm">
-        © 2026 Đồ án môn học - Sinh viên ĐH Duy Tân
-      </footer>
+      {/* 3. Chân trang Footer chính thức */}
+      <Footer />
 
-      {/* Đặt Chatbot ở Layout để trang nào cũng có */}
+      {/* 4. Đặt Chatbot ở Layout để trang nào cũng có */}
       <ChatbotWidget />
+      
     </div>
   );
 };
