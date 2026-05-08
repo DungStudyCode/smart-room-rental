@@ -2,7 +2,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Components (Đã tạo Navbar, Footer)
-import Navbar from './components/Navbar';
+import Navbar from './components/navbar/Navbar';
 import Footer from './components/Footer';
 // Layouts (Đã tạo)
 import MainLayout from './layouts/MainLayout';
@@ -13,8 +13,8 @@ import HostLayout from './layouts/HostLayout';
 import HomePage from './pages/HomePage'; // PB03, PB20
 import RoomDetail from './pages/RoomDetail'; // PB04, PB17
 // import MapSearch from './pages/MapSearch'; // PB05
-// import Login from './pages/Login'; // PB02
-// import Register from './pages/Register'; // PB01
+import Login from './pages/Login'; // PB02
+import Register from './pages/Register'; // PB01
 
 // Pages - Private (User/Landlord) - Chưa tạo
 // import Profile from './pages/Profile'; // PB08
@@ -45,8 +45,8 @@ function App() {
           <Route path="phong-tro/:id" element={<RoomDetail />} />
           {/* <Route path="ban-do" element={<MapSearch />} /> */}
           {/* <Route path="o-ghep" element={<RoommateFinder />} /> */}
-          {/* <Route path="login" element={<Login />} /> */}
-          {/* <Route path="register" element={<Register />} /> */}
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
           
           {/* PRIVATE ROUTES (Yêu cầu đăng nhập User) */}
           {/* <Route path="ca-nhan" element={<Profile />} /> */}

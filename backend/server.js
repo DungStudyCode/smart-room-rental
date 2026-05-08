@@ -10,10 +10,12 @@ const connectDB = require('./src/config/db');
 const chatbotRoutes = require('./src/routes/chatbotRoutes');
 const roomRoutes = require('./src/routes/roomRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
+const authRoutes = require('./src/routes/authRoutes');
 
 const app = express();
 
 // 3. Khởi chạy kết nối đến MongoDB Atlas
+
 connectDB();
 
 // 4. Middlewares bắt buộc
@@ -24,6 +26,7 @@ app.use(express.json()); // Giúp Backend đọc được req.body dưới dạn
 app.use('/api/chat', chatbotRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/auth', authRoutes);
 
 // Route test server
 app.get('/', (req, res) => {
