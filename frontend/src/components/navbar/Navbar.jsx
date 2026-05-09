@@ -6,7 +6,6 @@ import UserDropdown from './UserDropdown';
 
 
 //
-import ProtectedRoute from '../../router/ProtectedRoute';
 const Navbar = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();

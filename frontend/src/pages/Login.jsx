@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Link , useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 const Login = () => {
@@ -16,12 +16,22 @@ const Login = () => {
                 password,
             });
 
-            alert('Đăng nhập thành công!');
-            console.log(response.data);
-            // localStorage.setItem('token', response.data.token);
-            const token = response.data.token;
+            // 1. Lấy dữ liệu từ response.data
+            const { token, user } = response.data;
+
+            // 2. Lưu vào localStorage
             localStorage.setItem('token', token);
-            navigate('/')
+            localStorage.setItem('user', JSON.stringify(user));
+
+            alert('Đăng nhập thành công!');
+            console.log('Dữ liệu User:', user);
+
+            // 3. Logic điều hướng dựa trên Role (Quyền)
+            if (user.role === 'admin') {
+                navigate('/admin'); // Vào thẳng trang quản trị
+            } else {
+                navigate('/'); // Khách hoặc Chủ nhà về trang chủ
+            }
         } catch (err) {
             if (err.response) {
                 alert(err.response.data.message || 'Email hoặc mật khẩu sai');

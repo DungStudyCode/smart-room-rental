@@ -1,12 +1,12 @@
 // frontend/src/App.jsx
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 // // Components (Đã tạo Navbar, Footer)
 // import Navbar from './components/navbar/Navbar';
 // import Footer from './components/Footer';
 // Layouts (Đã tạo)
 import MainLayout from './layouts/MainLayout';
-import AdminLayout from './layouts/admin/AdminLayout';
+import AdminLayout from './layouts/AdminLayout';
 import HostLayout from './layouts/HostLayout';
 
 // Pages - Public (Đã tạo HomePage)
@@ -20,11 +20,13 @@ import FindRoom from './pages/FindRoom'; // Trang tìm phòng
 // (Các import comment khác giữ nguyên, mình ẩn bớt cho gọn)
 import CrawlerManager from './pages/admin/CrawlerManager'; // PB11 (Ưu tiên 1)
 import AIPendingList from './pages/admin/AIPendingList'; // PB12 (Ưu tiên 1)
-import UserManager from './layouts/admin/UserManager'; // PB  13
-import PostManager from './layouts/admin/PostManager'; // PB 14
+import UserManager from './pages/admin/UserManager'; // PB  13
+import PostManager from './pages/admin/PostManager'; // PB 14
 
 //route logic kiểm tra trạng thái login
 import ProtectedRoute from './router/ProtectedRoute';
+// kiem tra admin
+import AdminRoute from './router/AdminRoute';
 function App() {
     return (
         <Router>
@@ -55,11 +57,13 @@ function App() {
                 </Route>
 
                 {/* ADMIN ROUTES (Giao diện Quản trị viên) - Bọc bởi AdminLayout */}
-                <Route path="/admin" element={<AdminLayout />}>
-                    <Route path="users" element={<UserManager />} />
-                    <Route path="posts" element={<PostManager />} />
-                    <Route path="crawler" element={<CrawlerManager />} />
-                    <Route path="ai-duyet-tin" element={<AIPendingList />} />
+                <Route element={<AdminRoute />}>
+                    <Route path="/admin" element={<AdminLayout />}>
+                        <Route path="users" element={<UserManager />} />
+                        <Route path="posts" element={<PostManager />} />
+                        <Route path="crawler" element={<CrawlerManager />} />
+                        <Route path="ai-duyet-tin" element={<AIPendingList />} />
+                    </Route>
                 </Route>
             </Routes>
         </Router>
