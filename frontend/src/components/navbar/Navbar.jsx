@@ -4,6 +4,9 @@ import Tippy from '@tippyjs/react';
 import NavLink from './NavLink';
 import UserDropdown from './UserDropdown';
 
+
+//
+import ProtectedRoute from '../../router/ProtectedRoute';
 const Navbar = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();

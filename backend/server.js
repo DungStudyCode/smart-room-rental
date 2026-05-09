@@ -11,11 +11,11 @@ const connectDB = require('./src/config/db');
 const chatbotRoutes = require('./src/routes/chatbotRoutes');
 const roomRoutes = require('./src/routes/roomRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
-<<<<<<< HEAD
+
 const authRoutes = require('./src/routes/authRoutes');
-=======
+
 const { autoRunCrawler } = require('./src/controllers/adminController'); // Import hàm cào tự động
->>>>>>> f23473a9981206d909cec4a57c3a8258255a05b1
+
 
 const app = express();
 
