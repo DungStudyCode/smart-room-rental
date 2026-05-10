@@ -1,4 +1,4 @@
-import React from 'react';
+
 import StatusBadge from './StatusBadge';
 
 const RoomRow = ({ room, onApprove, onReject }) => {

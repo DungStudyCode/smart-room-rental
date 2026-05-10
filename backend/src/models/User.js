@@ -7,7 +7,14 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     role: { type: String, enum: ["user", "admin"], default: "user" },
     userType: { type: String, enum: ["tenant", "landlord"], default: "tenant" }, // Phân loại theo ảnh (Sinh viên/Chủ nhà)
+    savedRooms: [ 
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Room",
+      },
+    ],
   },
+
   { timestamps: true }
 );
 

@@ -35,8 +35,9 @@ const Navbar = () => {
           {/* 2. Navigation Section */}
           <nav className="hidden md:flex space-x-8 h-full">
             <NavLink to="/" label="Tìm phòng" active={pathname === '/'} />
-            <NavLink to="/host/dang-tin-moi" label="Đăng tin" active={pathname === '/host/dang-tin-moi'} />
-            <NavLink to="/tro-giup" label="Trợ giúp" active={pathname === '/tro-giup'} />
+            {/* <NavLink to="/host/dang-tin-moi" label="Đăng tin" active={pathname === '/host/dang-tin-moi'} /> */}
+            <NavLink to="/phong-da-luu" label="Phòng đã lưu" active={pathname === '/phong-da-luu'} />
+            <NavLink to="/profile-ca-nhan" label="Hồ sơ cá nhân" active={pathname === '/profile-ca-nhan'} />
           </nav>
 
           {/* 3. Actions Section (Auth) */}

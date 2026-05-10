@@ -1,5 +1,5 @@
 // frontend/src/App.jsx
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // // Components (Đã tạo Navbar, Footer)
 // import Navbar from './components/navbar/Navbar';
@@ -22,6 +22,8 @@ import CrawlerManager from './pages/admin/CrawlerManager'; // PB11 (Ưu tiên 1)
 import AIPendingList from './pages/admin/AIPendingList'; // PB12 (Ưu tiên 1)
 import UserManager from './pages/admin/UserManager'; // PB  13
 import PostManager from './pages/admin/PostManager'; // PB 14
+import SavedRooms from './pages/SavedRooms'; //PB 06
+import Profile from './pages/Profile';
 
 //route logic kiểm tra trạng thái login
 import ProtectedRoute from './router/ProtectedRoute';
@@ -44,7 +46,8 @@ function App() {
                     {/* PRIVATE ROUTES (Yêu cầu đăng nhập User) */}
                     <Route element={<ProtectedRoute />}>
                         {/* <Route path="ca-nhan" element={<Profile />} /> */}
-                        {/* <Route path="da-luu" element={<SavedRooms />} /> */}
+                        <Route path="phong-da-luu" element={<SavedRooms />} />
+                        <Route path="profile-ca-nhan" element={<Profile/>} />
                         {/* <Route path="tin-nhan" element={<Chats />} /> */}
                     </Route>
                 </Route>
