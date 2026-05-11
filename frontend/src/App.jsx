@@ -1,9 +1,9 @@
 // frontend/src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
 // // Components (Đã tạo Navbar, Footer)
 // import Navbar from './components/navbar/Navbar';
 // import Footer from './components/Footer';
+import ToastConfig from './components/ToastConfig';
 // Layouts (Đã tạo)
 import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
@@ -27,11 +27,15 @@ import Profile from './pages/Profile';
 
 //route logic kiểm tra trạng thái login
 import ProtectedRoute from './router/ProtectedRoute';
+// tự động đăng xuất sau khi không tương tác 30p
+import InactivityHandler from './components/handleLogin/InactivityHandler';
 // kiem tra admin
 import AdminRoute from './router/AdminRoute';
 function App() {
     return (
         <Router>
+            <ToastConfig/>
+            <InactivityHandler />
             <Routes>
                 {/* PUBLIC ROUTES (Khách truy cập) - Bọc bởi MainLayout */}
                 <Route path="/" element={<MainLayout />}>
@@ -47,7 +51,7 @@ function App() {
                     <Route element={<ProtectedRoute />}>
                         {/* <Route path="ca-nhan" element={<Profile />} /> */}
                         <Route path="phong-da-luu" element={<SavedRooms />} />
-                        <Route path="profile-ca-nhan" element={<Profile/>} />
+                        <Route path="profile-ca-nhan" element={<Profile />} />
                         {/* <Route path="tin-nhan" element={<Chats />} /> */}
                     </Route>
                 </Route>

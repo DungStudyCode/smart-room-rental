@@ -1,43 +1,52 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast'; 
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; 
 
 const Register = () => {
     const [role, setRole] = useState('tenant');
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState(''); 
+
+    
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const navigate = useNavigate();
 
-    //  Hàm xử lý gửi dữ liệu lên Server
     const handleRegister = async (e) => {
         e.preventDefault();
+
+        // Kiểm tra khớp mật khẩu trước khi gửi lên server
+        if (password !== confirmPassword) {
+            return toast.error('Mật khẩu xác nhận không khớp!');
+        }
+
+        const loadingToast = toast.loading('Đang xử lý đăng ký...');
 
         try {
             const response = await axios.post('http://localhost:5000/api/auth/register', {
                 fullName,
                 email,
                 password,
-                userType: role, // Gửi role hiện tại người dùng đang chọn
+                userType: role, 
             });
 
             if (response.status === 201) {
-                alert('Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập.');
-                navigate('/login'); // Chuyển hướng sang trang đăng nhập
+                toast.success('Đăng ký thành công! Vui lòng đăng nhập.', { id: loadingToast });
+                navigate('/login'); 
             }
         } catch (err) {
-            if (err.response) {
-                alert(err.response.data.message || 'Lỗi đăng ký, vui lòng thử lại.');
-            } else {
-                alert('Không thể kết nối đến server!');
-            }
+            const message = err.response?.data?.message || 'Lỗi đăng ký, vui lòng thử lại.';
+            toast.error(message, { id: loadingToast });
         }
     };
 
     return (
         <div className="flex min-h-screen font-sans">
-            {/* Cột trái - Background */}
             <div
                 className="hidden md:flex md:w-1/2 bg-cover bg-center relative"
                 style={{
@@ -105,7 +114,7 @@ const Register = () => {
                         <input
                             type="text"
                             placeholder="Họ và tên"
-                            className="w-full p-3 border border-gray-200 rounded-lg focus:outline-purple-500"
+                            className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:border-purple-500"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
                             required
@@ -113,20 +122,50 @@ const Register = () => {
                         <input
                             type="email"
                             placeholder="Email"
-                            className="w-full p-3 border border-gray-200 rounded-lg focus:outline-purple-500"
+                            className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:border-purple-500"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
                         />
-                        <input
-                            type="password"
-                            placeholder="Mật khẩu (tối thiểu 8 ký tự)"
-                            className="w-full p-3 border border-gray-200 rounded-lg focus:outline-purple-500"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            minLength="8"
-                            required
-                        />
+
+                        {/* Input Mật khẩu */}
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Mật khẩu (tối thiểu 8 ký tự)"
+                                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:border-purple-500"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                minLength="8"
+                                required
+                            />
+                            <button 
+                                type="button" 
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-3.5 text-gray-400 hover:text-purple-600"
+                            >
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                            </button>
+                        </div>
+
+                        {/* Input Xác nhận mật khẩu (Mới) */}
+                        <div className="relative">
+                            <input
+                                type={showConfirmPassword ? "text" : "password"}
+                                placeholder="Xác nhận lại mật khẩu"
+                                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:border-purple-500"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                required
+                            />
+                            <button 
+                                type="button" 
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute right-3 top-3.5 text-gray-400 hover:text-purple-600"
+                            >
+                                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                            </button>
+                        </div>
 
                         <button
                             type="submit"

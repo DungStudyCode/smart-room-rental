@@ -1,43 +1,43 @@
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        const loadingToast = toast.loading('Đang xác thực...');
+
         try {
             const response = await axios.post('http://localhost:5000/api/auth/login', {
                 email,
                 password,
             });
 
-            // 1. Lấy dữ liệu từ response.data
             const { token, user } = response.data;
 
-            // 2. Lưu vào localStorage
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
 
-            alert('Đăng nhập thành công!');
-            console.log('Dữ liệu User:', user);
+            toast.success('Đăng nhập thành công!', { id: loadingToast });
 
-            // 3. Logic điều hướng dựa trên Role (Quyền)
             if (user.role === 'admin') {
-                navigate('/admin'); // Vào thẳng trang quản trị
+                navigate('/admin');
+            } else if (user.userType === 'landlord') {
+                navigate('/host');
             } else {
-                navigate('/'); // Khách hoặc Chủ nhà về trang chủ
+                navigate('/');
             }
         } catch (err) {
-            if (err.response) {
-                alert(err.response.data.message || 'Email hoặc mật khẩu sai');
-            } else {
-                alert('Không thể kết nối đến server!');
-            }
+            const errorMsg = err.response?.data?.message || 'Email hoặc mật khẩu không chính xác';
+            toast.error(errorMsg, { id: loadingToast });
         }
     };
 
@@ -54,7 +54,7 @@ const Login = () => {
                         <input
                             type="email"
                             placeholder="name@company.com"
-                            className="w-full p-3 border border-gray-100 bg-purple-50/30 rounded-xl focus:outline-purple-500"
+                            className="w-full p-3 border border-gray-100 bg-purple-50/30 rounded-xl focus:outline-none focus:border-purple-500"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
@@ -62,14 +62,24 @@ const Login = () => {
                     </div>
                     <div>
                         <label className="text-sm font-semibold">Mật khẩu</label>
-                        <input
-                            type="password"
-                            placeholder="••••••••"
-                            className="w-full p-3 border border-gray-100 bg-purple-50/30 rounded-xl focus:outline-purple-500"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+                        <div className="relative">
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="••••••••"
+                                className="w-full p-3 border border-gray-100 bg-purple-50/30 rounded-xl focus:outline-none focus:border-purple-500"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            {/* Nút Eye Icon */}
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-4 top-3.5 text-gray-400 hover:text-purple-600 transition-colors"
+                            >
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="flex justify-between items-center text-sm">
