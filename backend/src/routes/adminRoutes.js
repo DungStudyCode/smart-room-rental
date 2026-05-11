@@ -1,33 +1,49 @@
 // backend/src/routes/adminRoutes.js
 const express = require('express');
-const adminController = require('../controllers/adminController');
+const router = express.Router();
+
+// 1. Import Middleware xác thực (Nhớ kiểm tra đúng tên thư mục middlewares hay middleware nhé)
+const { verifyToken } = require('../middlewares/authMiddleware.js');
+
+// 2. Import TẤT CẢ các hàm từ Controller (Đã bổ sung getAdminDashboardStats)
 const { 
   runCrawlerBot, 
   getPendingRooms, 
   approveRoom,
-  toggleAutoBot,   // Bổ sung hàm bật/tắt
-  getBotStatus,    // Bổ sung hàm kiểm tra trạng thái
-  deleteRoom ,      // THÊM IMPORT HÀM XÓA TIN
-
-  getAllUsers, //get user and post room
+  toggleAutoBot,
+  getBotStatus,
+  deleteRoom,
+  getAllUsers,
   getAllRooms,
+  updateRoomStatus,
+  getAdminDashboardStats // BỔ SUNG HÀM NÀY
 } = require('../controllers/adminController');
 
-const router = express.Router();
 
-// 1. Các API quản lý tin đăng & cào thủ công
+// ==========================================
+// 🌟 API THỐNG KÊ CHO DASHBOARD
+// ==========================================
+router.get('/dashboard-stats', verifyToken, getAdminDashboardStats);
+
+// ==========================================
+// Các API quản lý tin đăng & cào thủ công
+// ==========================================
 router.post('/run-crawler', runCrawlerBot);
 router.get('/pending-rooms', getPendingRooms);
 router.put('/approve-room/:id', approveRoom);
-router.delete('/reject-room/:id', deleteRoom); // THÊM DÒNG NÀY ĐỂ NỐI VỚI NÚT XÓA Ở FRONTEND
+router.delete('/reject-room/:id', deleteRoom);
 
-// 2. Các API điều khiển Bot Auto-Pilot ngầm
-router.get('/bot/status', getBotStatus);     // GET: Trả về { isRunning: true/false }
-router.post('/bot/toggle', toggleAutoBot);   // POST: Gửi { action: 'start' } hoặc { action: 'stop' }
+// ==========================================
+// Các API điều khiển Bot Auto-Pilot ngầm
+// ==========================================
+router.get('/bot/status', getBotStatus);     
+router.post('/bot/toggle', toggleAutoBot);   
 
-// API get user and post room
+// ==========================================
+// API quản lý Users và Rooms
+// ==========================================
 router.get('/users', getAllUsers);
 router.get('/rooms', getAllRooms);
-router.put('/rooms/:id', adminController.updateRoomStatus);
+router.put('/rooms/:id', updateRoomStatus);
 
 module.exports = router;

@@ -1,69 +1,77 @@
 // frontend/src/App.jsx
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// // Components (Đã tạo Navbar, Footer)
-// import Navbar from './components/navbar/Navbar';
-// import Footer from './components/Footer';
-// Layouts (Đã tạo)
+// Layouts
 import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
 import HostLayout from './layouts/HostLayout';
 
-// Pages - Public (Đã tạo HomePage)
-import HomePage from './pages/HomePage'; // PB03, PB20
-import RoomDetail from './pages/RoomDetail'; // PB04, PB17
-// import MapSearch from './pages/MapSearch'; // PB05
-import Login from './pages/Login'; // PB02
-import Register from './pages/Register'; // PB01
-import FindRoom from './pages/FindRoom'; // Trang tìm phòng
+// Pages - Public
+import HomePage from './pages/HomePage'; 
+import RoomDetail from './pages/RoomDetail'; 
+import Login from './pages/Login'; 
+import Register from './pages/Register'; 
+import FindRoom from './pages/FindRoom'; 
+import HelpPage from './pages/HelpPage'; // 👈 ĐÃ THÊM IMPORT TRANG TRỢ GIÚP
 
-// (Các import comment khác giữ nguyên, mình ẩn bớt cho gọn)
-import CrawlerManager from './pages/admin/CrawlerManager'; // PB11 (Ưu tiên 1)
-import AIPendingList from './pages/admin/AIPendingList'; // PB12 (Ưu tiên 1)
-import UserManager from './pages/admin/UserManager'; // PB  13
-import PostManager from './pages/admin/PostManager'; // PB 14
+// Pages - Admin
+import AdminDashboard from './pages/admin/AdminDashboard'; 
+import CrawlerManager from './pages/admin/CrawlerManager'; 
+import AIPendingList from './pages/admin/AIPendingList'; 
+import UserManager from './pages/admin/UserManager'; 
+import PostManager from './pages/admin/PostManager'; 
 
-//route logic kiểm tra trạng thái login
+// Pages - Host
+import HostDashboard from './pages/host/HostDashboard';
+import HostMyPosts from './pages/host/HostMyPosts';
+import HostCreateRoom from './pages/host/HostCreateRoom';
+import HostSettings from './pages/host/HostSettings';
+
+// Route Guards
 import ProtectedRoute from './router/ProtectedRoute';
-// kiem tra admin
 import AdminRoute from './router/AdminRoute';
+
 function App() {
     return (
         <Router>
             <Routes>
-                {/* PUBLIC ROUTES (Khách truy cập) - Bọc bởi MainLayout */}
+                {/* 🌟 MAINLAYOUT BAO BỌC TOÀN BỘ ỨNG DỤNG CỦA BẠN */}
                 <Route path="/" element={<MainLayout />}>
+                    
+                    {/* 1. PUBLIC ROUTES */}
                     <Route index element={<HomePage />} />
                     <Route path="tim-phong" element={<FindRoom />} />
                     <Route path="phong-tro/:id" element={<RoomDetail />} />
-                    {/* <Route path="ban-do" element={<MapSearch />} /> */}
-                    {/* <Route path="o-ghep" element={<RoommateFinder />} /> */}
                     <Route path="login" element={<Login />} />
                     <Route path="register" element={<Register />} />
+                    <Route path="tro-giup" element={<HelpPage />} /> {/* 👈 ĐÃ THÊM ROUTE CHO TRANG TRỢ GIÚP */}
 
-                    {/* PRIVATE ROUTES (Yêu cầu đăng nhập User) */}
+                    {/* PRIVATE ROUTES CỦA USER */}
                     <Route element={<ProtectedRoute />}>
-                        {/* <Route path="ca-nhan" element={<Profile />} /> */}
-                        {/* <Route path="da-luu" element={<SavedRooms />} /> */}
-                        {/* <Route path="tin-nhan" element={<Chats />} /> */}
+                        {/* Các route của user sau này ví dụ: Profile, Favorites... */}
                     </Route>
-                </Route>
 
-                {/* HOST ROUTES (Giao diện cho Chủ nhà) - Bọc bởi HostLayout */}
-                <Route element={<ProtectedRoute />}>
-                    <Route path="/host" element={<HostLayout />}>
-                        {/* Các route của host sau này */}
+                    {/* 2. HOST ROUTES */}
+                    <Route element={<ProtectedRoute />}>
+                        <Route path="host" element={<HostLayout />}>
+                            <Route index element={<HostDashboard />} />
+                            <Route path="tin-dang" element={<HostMyPosts />} />
+                            <Route path="dang-tin" element={<HostCreateRoom />} />
+                            <Route path="cai-dat" element={<HostSettings />} />
+                        </Route>
                     </Route>
-                </Route>
 
-                {/* ADMIN ROUTES (Giao diện Quản trị viên) - Bọc bởi AdminLayout */}
-                <Route element={<AdminRoute />}>
-                    <Route path="/admin" element={<AdminLayout />}>
-                        <Route path="users" element={<UserManager />} />
-                        <Route path="posts" element={<PostManager />} />
-                        <Route path="crawler" element={<CrawlerManager />} />
-                        <Route path="ai-duyet-tin" element={<AIPendingList />} />
+                    {/* 3. ADMIN ROUTES */}
+                    <Route element={<AdminRoute />}>
+                        <Route path="admin" element={<AdminLayout />}>
+                            <Route index element={<AdminDashboard />} /> 
+                            <Route path="users" element={<UserManager />} />
+                            <Route path="posts" element={<PostManager />} />
+                            <Route path="crawler" element={<CrawlerManager />} />
+                            <Route path="ai-duyet-tin" element={<AIPendingList />} />
+                        </Route>
                     </Route>
+
                 </Route>
             </Routes>
         </Router>

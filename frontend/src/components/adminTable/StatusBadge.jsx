@@ -1,3 +1,4 @@
+// frontend/src/components/adminTable/StatusBadge.jsx
 const StatusBadge = ({ type }) => {
     const styles = {
         // Trạng thái Phòng (Dựa trên Model Room.js của bạn)

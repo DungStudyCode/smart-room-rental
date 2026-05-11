@@ -1,10 +1,10 @@
 // backend/src/routes/roomRoutes.js
 const express = require('express');
-const { getPublicRooms } = require('../controllers/roomController');
+const { getPublicRooms, getRoomById } = require('../controllers/roomController'); 
 
 const router = express.Router();
 
-// API: GET /api/rooms
 router.get('/', getPublicRooms);
+router.get('/:id', getRoomById); // Dòng này sẽ bắt cái ID trên URL
 
 module.exports = router;

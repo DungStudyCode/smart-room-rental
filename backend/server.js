@@ -11,8 +11,8 @@ const connectDB = require('./src/config/db');
 const chatbotRoutes = require('./src/routes/chatbotRoutes');
 const roomRoutes = require('./src/routes/roomRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
-
 const authRoutes = require('./src/routes/authRoutes');
+const hostRouter = require('./src/routes/hostRoutes');
 
 const { autoRunCrawler } = require('./src/controllers/adminController'); // Import hàm cào tự động
 
@@ -32,6 +32,7 @@ app.use('/api/chat', chatbotRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/host', hostRouter);
 
 // ==========================================
 // 6. CÀI ĐẶT CRON JOB (AUTO-PILOT 30 PHÚT)

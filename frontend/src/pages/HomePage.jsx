@@ -1,5 +1,6 @@
 // frontend/src/pages/HomePage.jsx
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // BƯỚC 1: IMPORT THÊM LINK
 import { 
   FaMapMarkerAlt, FaSearch, FaBed, FaBuilding, 
   FaHome, FaSpinner, FaRegHeart, FaVectorSquare 
@@ -25,7 +26,6 @@ const HomePage = () => {
   }, []);
 
   return (
-    // THÊM pb-24 VÀO ĐÂY ĐỂ TẠO KHÔNG GIAN THỞ Ở CUỐI TRANG
     <div className="bg-white w-full pb-24">
       
       {/* ==========================================
@@ -89,9 +89,17 @@ const HomePage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             
             {rooms.map((room) => (
-              <div key={room._id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 group relative flex flex-col">
+              // BƯỚC 2: THAY THẺ DIV BẰNG THẺ LINK, TRỎ ĐẾN TRANG CHI TIẾT
+              <Link 
+                to={`/phong-tro/${room._id}`} 
+                key={room._id} 
+                className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 group relative flex flex-col block"
+              >
                 
-                <button className="absolute top-3 right-3 z-10 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
+                <button 
+                  onClick={(e) => e.preventDefault()} // Ngăn việc click nút tim bị nhảy trang
+                  className="absolute top-3 right-3 z-10 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
+                >
                   <FaRegHeart />
                 </button>
 
@@ -122,7 +130,7 @@ const HomePage = () => {
                     </div>
                   </div>
 
-                  <h2 className="text-gray-800 font-semibold text-sm mb-2 line-clamp-2 hover:text-purple-600 cursor-pointer transition-colors" title={room.title}>
+                  <h2 className="text-gray-800 font-semibold text-sm mb-2 line-clamp-2 hover:text-purple-600 transition-colors" title={room.title}>
                     {room.title}
                   </h2>
 
@@ -145,7 +153,7 @@ const HomePage = () => {
                   </div>
                 </div>
 
-              </div>
+              </Link>
             ))}
           </div>
         )}

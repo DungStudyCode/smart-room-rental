@@ -24,8 +24,8 @@ const roomSchema = new mongoose.Schema({
     required: [true, 'Địa chỉ là bắt buộc'] 
   },
   location: {
-    lat: { type: Number },
-    lng: { type: Number }
+    lat: { type: Number, default: 16.0544 }, 
+    lng: { type: Number, default: 108.2022 }
   },
   images: { 
     type: [String], 
@@ -45,24 +45,29 @@ const roomSchema = new mongoose.Schema({
     type: String, 
     required: [true, 'Số điện thoại liên hệ là bắt buộc'] 
   },
-
-  // ==========================================
-  // THÊM CÁC TRƯỜNG PHỤC VỤ CRAWLER (PB12)
-  // ==========================================
   postUrl: { 
     type: String,
-    unique: true, // Thêm unique để DB tự chặn nếu cào trùng bài
-    sparse: true  // Cho phép null nếu đăng tin thủ công
+    unique: true, 
+    sparse: true  
   },
+  // ĐÃ THÊM: Nguồn gốc tin (Cào từ Web hay Đăng thủ công)
   source: { 
-    type: String 
+    type: String,
+    default: 'MANUAL'
+  },
+  // ĐÃ THÊM: Liên kết với ID của Chủ nhà (Để đếm cho Dashboard)
+  authorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  // ĐÃ THÊM: Số lượt xem phòng
+  views: {
+    type: Number,
+    default: 0
   }
-  // ==========================================
-
 }, { 
   timestamps: true 
 });
-
-// XÓA BỎ DÒNG: roomSchema.index({ postUrl: 1 }); <-- Xóa dòng này đi!
 
 module.exports = mongoose.model('Room', roomSchema);

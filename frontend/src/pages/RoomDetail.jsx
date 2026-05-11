@@ -1,192 +1,204 @@
-import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import {
-    FaMapMarkerAlt,
-    FaRulerCombined,
-    FaRegHeart,
-    FaHeart,
-    FaCheckCircle,
-    FaUserCircle,
-    FaPhoneAlt,
-    FaExclamationTriangle,
-    FaShareAlt,
-    FaChevronLeft,
+// frontend/src/pages/RoomDetail.jsx
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { 
+  FaMapMarkerAlt, FaVectorSquare, FaUserFriends, FaHome, 
+  FaCheckCircle, FaPhoneAlt, FaCommentDots, FaSpinner
 } from 'react-icons/fa';
 
+// ======================
+// THÊM IMPORT BẢN ĐỒ LEAFLET
+// ======================
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Tạo Icon Ghim to và nổi bật cho khách hàng dễ nhìn
+const troSmartMarker = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', 
+  iconSize: [46, 46], // Icon to hơn bên trang Admin một chút
+  iconAnchor: [23, 46],
+  className: 'drop-shadow-xl' // Đổ bóng cho ghim nổi bật trên nền bản đồ
+});
+
 const RoomDetail = () => {
-    const { id } = useParams(); // Lấy ID phòng từ URL
-    const [isSaved, setIsSaved] = useState(false);
+  const { id } = useParams();
+  const [room, setRoom] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showPhone, setShowPhone] = useState(false);
 
-    // Dữ liệu giả lập (Sau này sẽ fetch từ API dựa vào ID)
-    const roomData = {
-        id: id,
-        title: 'Phòng trọ ban công thoáng mát, full nội thất gần ĐH Duy Tân',
-        price: '2.5 Triệu',
-        area: 25,
-        address: '123 Nguyễn Văn Linh, P. Nam Dương, Q. Hải Châu, Đà Nẵng',
-        status: 'Còn phòng',
-        isVerified: true,
-        description: `Cho thuê phòng trọ mới xây, sạch sẽ thoáng mát.
-- Giờ giấc tự do, không chung chủ.
-- Có sẵn máy lạnh, tủ lạnh, giường nệm, tủ quần áo.
-- WC riêng biệt, có máy nước nóng.
-- Khu vực an ninh, có camera 24/24, chỗ để xe rộng rãi tầng trệt.
-- Điện 3.5k/ký, Nước 100k/người, Wifi 50k/phòng.
-Cách ĐH Duy Tân cơ sở Nguyễn Văn Linh chỉ 5 phút đi bộ. Ưu tiên sinh viên hoặc người đi làm ngoan hiền.`,
-        amenities: ['Máy lạnh', 'Tủ lạnh', 'Giường nệm', 'Chỗ để xe', 'Ban công', 'Không chung chủ'],
-        images: [
-            'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=80',
-            'https://images.unsplash.com/photo-1502672260266-1c1de2d9d344?w=600&q=80',
-            'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80',
-        ],
-        host: {
-            name: 'Chị Lan (Chính chủ)',
-            phone: '0905.123.xxx',
-            avatar: null, // Sẽ dùng icon mặc định nếu ko có avatar
-            joinedDate: 'Tham gia từ tháng 3/2025',
-        },
+  useEffect(() => {
+    const fetchRoomDetail = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/rooms/${id}`);
+        const data = await response.json();
+        if (data.success) setRoom(data.data);
+      } catch (error) {
+        console.error("Lỗi kết nối:", error);
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchRoomDetail();
+  }, [id]);
 
-    return (
-        <div className="bg-gray-50 min-h-screen pb-20">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-                {/* Nút Back */}
-                <Link
-                    to="/"
-                    className="inline-flex items-center text-purple-600 hover:text-purple-800 font-medium mb-6 transition-colors"
-                >
-                    <FaChevronLeft className="mr-1" /> Quay lại danh sách
-                </Link>
+  if (loading) return <div className="min-h-screen flex justify-center items-center bg-gray-50"><FaSpinner className="animate-spin text-purple-600 text-4xl" /></div>;
+  if (!room) return <div className="min-h-screen flex justify-center items-center text-gray-500 bg-gray-50">Không tìm thấy thông tin phòng.</div>;
 
-                {/* Khu vực thư viện ảnh (Grid Layout) */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 h-[300px] md:h-[400px] mb-8 rounded-2xl overflow-hidden shadow-sm">
-                    <div className="md:col-span-2 relative h-full">
-                        <img src={roomData.images[0]} alt="Phòng chính" className="w-full h-full object-cover" />
-                        <button className="absolute bottom-4 right-4 bg-white/90 px-4 py-2 rounded-lg text-sm font-semibold shadow hover:bg-white transition-colors">
-                            Xem tất cả 5 ảnh
-                        </button>
-                    </div>
-                    <div className="hidden md:grid grid-rows-2 gap-3 h-full">
-                        <img src={roomData.images[1]} alt="Góc phòng" className="w-full h-full object-cover" />
-                        <img src={roomData.images[2]} alt="Tiện ích" className="w-full h-full object-cover" />
-                    </div>
-                </div>
+  const maskPhone = (phone) => {
+    if (!phone || phone === 'Inbox Facebook') return phone;
+    return phone.replace(/(\d{4})(\d{3})(\d{3})/, '$1 *** ***');
+  };
 
-                {/* Bố cục chia 2 cột */}
-                <div className="flex flex-col lg:flex-row gap-8">
-                    {/* CỘT TRÁI: Nội dung chi tiết (Chiếm 2/3) */}
-                    <div className="lg:w-2/3">
-                        {/* Header thông tin */}
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
-                            <div className="flex items-start justify-between mb-2">
-                                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
-                                    {roomData.title}
-                                </h1>
-                                {/* Nút Lưu & Chia sẻ */}
-                                <div className="flex gap-2 ml-4 shrink-0">
-                                    <button className="p-2.5 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors">
-                                        <FaShareAlt />
-                                    </button>
-                                    <button
-                                        onClick={() => setIsSaved(!isSaved)}
-                                        className={`p-2.5 rounded-full transition-colors ${
-                                            isSaved
-                                                ? 'bg-red-50 text-red-500'
-                                                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                                        }`}
-                                    >
-                                        {isSaved ? <FaHeart size={18} /> : <FaRegHeart size={18} />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Badges & Địa chỉ */}
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-6 mt-4">
-                                <span className="flex items-center text-green-600 bg-green-50 px-3 py-1 rounded-full font-medium">
-                                    <FaCheckCircle className="mr-1.5" /> Còn phòng
-                                </span>
-                                {roomData.isVerified && (
-                                    <span className="flex items-center text-blue-600 bg-blue-50 px-3 py-1 rounded-full font-medium">
-                                        <FaCheckCircle className="mr-1.5" /> Đã xác thực
-                                    </span>
-                                )}
-                                <span className="flex items-center">
-                                    <FaRulerCombined className="mr-1.5 text-gray-400" /> {roomData.area} m²
-                                </span>
-                                <span className="flex items-center">
-                                    <FaMapMarkerAlt className="mr-1.5 text-gray-400" /> {roomData.address}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Khối Mô tả */}
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
-                            <h2 className="text-xl font-bold text-gray-900 mb-4">Mô tả chi tiết</h2>
-                            <div className="text-gray-700 leading-relaxed whitespace-pre-line">
-                                {roomData.description}
-                            </div>
-                        </div>
-
-                        {/* Khối Tiện ích */}
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                            <h2 className="text-xl font-bold text-gray-900 mb-4">Tiện ích đi kèm</h2>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-2">
-                                {roomData.amenities.map((item, index) => (
-                                    <div key={index} className="flex items-center text-gray-700">
-                                        <span className="w-2 h-2 rounded-full bg-purple-400 mr-3"></span>
-                                        {item}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* CỘT PHẢI: Khung Liên hệ cố định (Chiếm 1/3) */}
-                    <div className="lg:w-1/3">
-                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-purple-100 sticky top-24">
-                            {/* Mức giá */}
-                            <div className="mb-6">
-                                <span className="text-gray-500 text-sm font-medium">Giá cho thuê</span>
-                                <div className="text-3xl font-bold text-purple-600 mt-1">
-                                    {roomData.price} <span className="text-base text-gray-500 font-normal">/tháng</span>
-                                </div>
-                            </div>
-
-                            {/* Thông tin Chủ nhà */}
-                            <div className="flex items-center gap-4 py-4 border-t border-b border-gray-100 mb-6">
-                                {roomData.host.avatar ? (
-                                    <img src={roomData.host.avatar} alt="Avatar" className="w-14 h-14 rounded-full" />
-                                ) : (
-                                    <FaUserCircle className="w-14 h-14 text-gray-300" />
-                                )}
-                                <div>
-                                    <h4 className="font-bold text-gray-900 text-lg">{roomData.host.name}</h4>
-                                    <p className="text-xs text-gray-500 mt-0.5">{roomData.host.joinedDate}</p>
-                                </div>
-                            </div>
-
-                            {/* Nút Gọi & Chat */}
-                            <div className="flex flex-col gap-3">
-                                <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center transition-colors">
-                                    <FaPhoneAlt className="mr-2" /> Hiển thị số điện thoại
-                                </button>
-                                <button className="w-full bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold py-3.5 rounded-xl border border-purple-200 transition-colors">
-                                    Nhắn tin trực tiếp
-                                </button>
-                            </div>
-
-                            {/* Báo cáo vi phạm (PB10) */}
-                            <div className="mt-6 text-center">
-                                <button className="inline-flex items-center text-sm text-gray-400 hover:text-red-500 transition-colors">
-                                    <FaExclamationTriangle className="mr-1.5" /> Báo cáo tin đăng không hợp lệ
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  return (
+    <div className="bg-gray-50 min-h-screen pb-20 pt-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* KHU VỰC ẢNH */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8 h-[300px] md:h-[450px] rounded-2xl overflow-hidden shadow-sm">
+          <div className="md:col-span-2 h-full bg-gray-200">
+            <img 
+              src={room.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=1000'} 
+              alt={room.title}
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+              onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=1000'; }}
+            />
+          </div>
+          <div className="hidden md:flex flex-col gap-3 h-full">
+            <div className="h-1/2 bg-gray-200 overflow-hidden">
+               <img src={room.images?.[1] || room.images?.[0]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer"/>
             </div>
+            <div className="h-1/2 bg-gray-200 overflow-hidden relative">
+               <img src={room.images?.[2] || room.images?.[0]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer"/>
+               {room.images?.length > 3 && (
+                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center cursor-pointer hover:bg-black/60 transition">
+                   <span className="text-white font-medium text-lg">+ {room.images.length - 3} ảnh</span>
+                 </div>
+               )}
+            </div>
+          </div>
         </div>
-    );
+
+        {/* LAYOUT CHÍNH */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* CỘT TRÁI: NỘI DUNG */}
+          <div className="lg:col-span-2 bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100 space-y-8">
+            
+            {/* 1. Header Thông tin */}
+            <div className="border-b border-gray-100 pb-6">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 leading-snug">{room.title}</h1>
+              <div className="flex items-start gap-2 text-gray-500 mb-6">
+                <FaMapMarkerAlt className="text-gray-400 mt-1 shrink-0" />
+                <span className="text-sm sm:text-base">{room.address}</span>
+              </div>
+              
+              <div className="flex flex-wrap gap-4">
+                <div className="flex items-center gap-2 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-100">
+                  <FaVectorSquare className="text-purple-500" /> <span className="font-medium text-gray-700">{room.area}m²</span>
+                </div>
+                <div className="flex items-center gap-2 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-100">
+                  <FaUserFriends className="text-purple-500" /> <span className="font-medium text-gray-700">Thỏa thuận</span>
+                </div>
+                <div className="flex items-center gap-2 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-100">
+                  <FaHome className="text-purple-500" /> <span className="font-medium text-gray-700">Phòng trọ</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Mô tả */}
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Mô tả chi tiết</h2>
+              <div className="text-gray-600 leading-relaxed whitespace-pre-line text-sm sm:text-base">
+                {room.description}
+              </div>
+            </div>
+
+            {/* 3. Tiện ích */}
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Tiện ích</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 bg-gray-50 p-6 rounded-xl border border-gray-100">
+                {room.amenities && room.amenities.length > 0 ? (
+                  room.amenities.map((amenity, idx) => (
+                    <div key={idx} className="flex items-center gap-3 text-gray-700 text-sm font-medium">
+                      <FaCheckCircle className="text-purple-500 shrink-0 text-lg" />
+                      <span>{amenity}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-gray-500">Đang cập nhật...</div>
+                )}
+              </div>
+            </div>
+
+            {/* 4. VỊ TRÍ BẢN ĐỒ (Đã tích hợp react-leaflet) */}
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Vị trí thực tế</h2>
+              <div className="w-full h-[300px] sm:h-[400px] rounded-xl overflow-hidden border border-purple-100 shadow-inner bg-gray-100 relative z-0">
+                {room.location && room.location.lat && room.location.lng ? (
+                  <MapContainer 
+                    center={[room.location.lat, room.location.lng]} 
+                    zoom={16} 
+                    scrollWheelZoom={false} // Khóa cuộn chuột để tránh trôi trang
+                    style={{ height: '100%', width: '100%' }}
+                  >
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <Marker position={[room.location.lat, room.location.lng]} icon={troSmartMarker} />
+                  </MapContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-400">Đang tải bản đồ...</div>
+                )}
+              </div>
+              <p className="text-xs text-gray-400 mt-2 italic">* Vị trí ghim đã được xác nhận bởi Admin TroSmart.</p>
+            </div>
+
+          </div>
+
+          {/* CỘT PHẢI: SIDEBAR */}
+          <div className="lg:col-span-1">
+            <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm sticky top-24">
+              
+              <div className="mb-6">
+                <p className="text-gray-500 text-sm mb-1 font-medium">Giá thuê</p>
+                <h3 className="text-3xl font-bold text-purple-700">
+                  {room.price ? room.price.toLocaleString('vi-VN') : 'Thỏa thuận'}
+                  {room.price > 0 && <span className="text-base font-normal text-gray-500 ml-1">đ</span>}
+                </h3>
+              </div>
+
+              <div className="space-y-4">
+                <button 
+                  onClick={() => setShowPhone(true)}
+                  className="w-full flex items-center justify-center gap-3 bg-purple-600 hover:bg-purple-700 text-white py-3.5 rounded-xl font-semibold transition-colors shadow-md shadow-purple-200"
+                >
+                  <FaPhoneAlt className="text-lg" /> 
+                  <span>{showPhone ? room.phone : maskPhone(room.phone)}</span>
+                </button>
+                
+                {room.source && room.source.includes('facebook') ? (
+                  <a 
+                    href={room.postUrl || room.source} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center gap-3 border-2 border-purple-600 text-purple-600 hover:bg-purple-50 py-3 rounded-xl font-semibold transition-colors"
+                  >
+                    <FaCommentDots className="text-xl" /> <span>Nhắn tin Facebook</span>
+                  </a>
+                ) : (
+                  <button className="w-full flex items-center justify-center gap-3 border-2 border-purple-600 text-purple-600 hover:bg-purple-50 py-3 rounded-xl font-semibold transition-colors">
+                    <FaCommentDots className="text-xl" /> <span>Nhắn tin nội bộ</span>
+                  </button>
+                )}
+              </div>
+              
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default RoomDetail;

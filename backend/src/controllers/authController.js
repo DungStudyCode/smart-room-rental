@@ -1,5 +1,6 @@
+// backend/src/controllers/authController.js
 const User = require('../models/User');
-const bcrypt = require('bcryptjs'); // thư viện mã hóa mật khẩu
+const bcrypt = require('bcryptjs'); 
 const jwt = require('jsonwebtoken');
 
 // Đăng ký tài khoản người dùng
@@ -38,10 +39,10 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng' });
     }
 
-    // Tạo JWT Token
+    // 🔥 ĐÃ SỬA: Đổi 'id' thành '_id' và đồng bộ 'secret_key_cua_ban'
     const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET || 'secret_key',
+      { _id: user._id, role: user.role }, 
+      process.env.JWT_SECRET || 'secret_key_cua_ban',
       { expiresIn: '1d' }
     );
 

@@ -1,6 +1,6 @@
 // frontend/src/pages/admin/AIPendingList.jsx
 
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, useRef, useMemo } from 'react';
 import {
   FaBolt,
   FaRegCopy,
@@ -13,17 +13,66 @@ import {
 } from 'react-icons/fa';
 
 // ======================
-// COMPONENT PHỤ
+// THÊM IMPORT BẢN ĐỒ LEAFLET
+// ======================
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Tạo Icon Ghim Đỏ nổi bật
+const customIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', 
+  iconSize: [38, 38],
+  iconAnchor: [19, 38],
+  popupAnchor: [0, -38]
+});
+
+// Component ép bản đồ di chuyển mượt mà đến tọa độ mới
+const MapUpdater = ({ center }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.flyTo(center, 16, { duration: 1.5 }); // Zoom level 16, hiệu ứng bay 1.5s
+  }, [center, map]);
+  return null;
+};
+
+// Component hỗ trợ kéo thả ghim trên bản đồ
+const DraggableMarker = ({ position, setPosition }) => {
+  const markerRef = useRef(null);
+  
+  // Cho phép click vào bản đồ để di chuyển ghim
+  const map = useMapEvents({
+    click(e) {
+      setPosition(e.latlng);
+      map.flyTo(e.latlng, map.getZoom());
+    },
+  });
+
+  // Cho phép cầm ghim kéo thả
+  const eventHandlers = useMemo(() => ({
+    dragend() {
+      const marker = markerRef.current;
+      if (marker != null) setPosition(marker.getLatLng());
+    },
+  }), [setPosition]);
+
+  return (
+    <Marker draggable={true} eventHandlers={eventHandlers} position={position} ref={markerRef} icon={customIcon} />
+  );
+};
+
+// ======================
+// COMPONENT PHỤ (INPUT)
 // ======================
 const AIInput = memo(({ label, value, type = "text", placeholder = "", onChange }) => (
   <div className="mb-4">
-    <label className="block text-xs font-medium text-gray-600 mb-1.5">
+    <label className="block text-xs font-medium text-gray-600 mb-1.5 flex justify-between">
       {label}
     </label>
     <div className="relative">
       {type === "textarea" ? (
         <textarea
-          className="w-full bg-[#fcfaff] border border-purple-100 rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:border-purple-400 min-h-[100px]"
+          className="w-full bg-[#fcfaff] border border-purple-100 rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:border-purple-400 min-h-[120px] resize-y"
           value={value || ''}
           onChange={onChange}
           placeholder={placeholder}
@@ -84,13 +133,21 @@ const AIPendingList = () => {
   }, []);
 
   // ======================
-  // XỬ LÝ THAY ĐỔI FORM
+  // XỬ LÝ THAY ĐỔI FORM (Đã nâng cấp hỗ trợ object location)
   // ======================
   const handleChange = (field, value) => {
-    setEditedRoom(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setEditedRoom(prev => {
+      if (field === 'location') {
+        return {
+          ...prev,
+          location: { ...prev.location, ...value }
+        };
+      }
+      return {
+        ...prev,
+        [field]: value
+      };
+    });
   };
 
   // ======================
@@ -105,6 +162,34 @@ const AIPendingList = () => {
       ...prev,
       images: linksArray
     }));
+  };
+
+  // ======================
+  // XỬ LÝ TÌM TỌA ĐỘ THEO ĐỊA CHỈ (GEOCODING)
+  // ======================
+  const handleGeocode = async () => {
+    if (!editedRoom?.address) return alert("Vui lòng nhập địa chỉ trước!");
+
+    // Thêm 'Đà Nẵng' để tăng độ chính xác nếu AI cào thiếu
+    const query = editedRoom.address.toLowerCase().includes('đà nẵng') 
+      ? editedRoom.address 
+      : `${editedRoom.address}, Đà Nẵng`;
+
+    try {
+      // Dùng API miễn phí của OpenStreetMap Nominatim
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        handleChange('location', { lat: parseFloat(lat), lng: parseFloat(lon) });
+      } else {
+        alert("⚠️ Không tìm thấy tọa độ tự động cho địa chỉ này. Bạn có thể nhập địa chỉ ngắn gọn hơn (Ví dụ: tên đường, phường) để định vị nhanh, sau đó kéo ghim!");
+      }
+    } catch (error) {
+      console.error("Lỗi Geocode:", error);
+      alert("Lỗi mạng khi tìm vị trí.");
+    }
   };
 
   // ======================
@@ -201,6 +286,12 @@ const AIPendingList = () => {
     );
   }
 
+  // Khai báo tọa độ hiển thị (Lấy từ DB, nếu rỗng thì dùng mặc định Đà Nẵng)
+  const mapCenter = [
+    editedRoom?.location?.lat || 16.0544, 
+    editedRoom?.location?.lng || 108.2022
+  ];
+
   // ======================
   // MAIN UI
   // ======================
@@ -216,7 +307,7 @@ const AIPendingList = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* =======================================
-            LEFT SIDE
+            LEFT SIDE (DỮ LIỆU THÔ)
         ======================================= */}
         <div className="flex flex-col h-full">
           <div className="flex justify-between items-center mb-4">
@@ -254,7 +345,7 @@ const AIPendingList = () => {
               </div>
             </div>
 
-            {/* DESCRIPTION */}
+            {/* DESCRIPTION ORIGINAL */}
             <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100 max-h-64 overflow-y-auto">
               {editedRoom.description}
             </div>
@@ -304,7 +395,7 @@ const AIPendingList = () => {
         </div>
 
         {/* =======================================
-            RIGHT SIDE
+            RIGHT SIDE (KẾT QUẢ AI & CHỈNH SỬA)
         ======================================= */}
         <div className="flex flex-col h-full">
           <div className="flex justify-between items-end mb-4">
@@ -344,13 +435,72 @@ const AIPendingList = () => {
                 value={editedRoom.area}
                 onChange={(e) => handleChange('area', e.target.value)}
               />
+              
+              {/* KHU VỰC ĐỊA CHỈ TÍCH HỢP NÚT ĐỊNH VỊ */}
+              <div className="col-span-2 mb-4">
+                <label className="block text-xs font-medium text-gray-600 mb-1.5 flex justify-between">
+                  Địa chỉ
+                </label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      className="w-full bg-[#fcfaff] border border-purple-100 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-purple-400"
+                      value={editedRoom.address || ''}
+                      onChange={(e) => handleChange('address', e.target.value)}
+                    />
+                    <span className="absolute right-3 top-3 bg-purple-100 text-purple-600 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider pointer-events-none">
+                      AI
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleGeocode}
+                    className="bg-purple-100 text-purple-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-purple-200 transition-colors flex items-center gap-2 whitespace-nowrap shadow-sm"
+                    title="Dịch địa chỉ thành tọa độ"
+                  >
+                    📍 Định vị
+                  </button>
+                </div>
+              </div>
+
+              {/* KHU VỰC BẢN ĐỒ KÉO THẢ (Đã tích hợp MapUpdater) */}
+              <div className="col-span-2 mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-semibold text-gray-600 flex items-center gap-1">
+                    📍 Ghim vị trí chính xác
+                  </span>
+                  <span className="text-[10px] text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full italic">
+                    Kéo thả ghim hoặc click để chọn vị trí
+                  </span>
+                </div>
+                <div className="w-full h-[250px] rounded-lg border border-gray-200 overflow-hidden shadow-inner relative z-0">
+                  <MapContainer 
+                    key={`${editedRoom._id}-map`} // Thêm key để reset map khi đổi phòng
+                    center={mapCenter} 
+                    zoom={15} 
+                    style={{ height: '100%', width: '100%' }}
+                  >
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <MapUpdater center={mapCenter} /> 
+                    <DraggableMarker 
+                      position={mapCenter} 
+                      setPosition={(latlng) => handleChange('location', { lat: latlng.lat, lng: latlng.lng })} 
+                    />
+                  </MapContainer>
+                </div>
+              </div>
+
+              {/* KHU VỰC MÔ TẢ CHI TIẾT */}
               <div className="col-span-2">
                 <AIInput
-                  label="Địa chỉ"
-                  value={editedRoom.address}
-                  onChange={(e) => handleChange('address', e.target.value)}
+                  label="Mô tả chi tiết"
+                  type="textarea"
+                  placeholder="Nhập hoặc sao chép mô tả chi tiết phòng trọ vào đây..."
+                  value={editedRoom.description}
+                  onChange={(e) => handleChange('description', e.target.value)}
                 />
               </div>
+
               <div className="col-span-2">
                 <AIInput
                   label="Liên kết Hình ảnh (Mỗi link 1 dòng)"
@@ -386,7 +536,6 @@ const AIPendingList = () => {
 
             {/* BUTTONS */}
             <div className="mt-auto pt-4 border-t border-gray-100 flex justify-end gap-3">
-              {/* Nút Xóa */}
               <button
                 onClick={() => handleReject(editedRoom._id)}
                 className="px-6 py-2.5 rounded-xl border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 flex items-center gap-2 transition-colors"
@@ -394,7 +543,6 @@ const AIPendingList = () => {
                 Từ chối & Xóa bỏ
               </button>
 
-              {/* Nút Phê duyệt */}
               <button
                 onClick={() => handleApprove(editedRoom._id)}
                 className="px-6 py-2.5 rounded-xl bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 flex items-center gap-2 transition-colors shadow-sm shadow-purple-200"

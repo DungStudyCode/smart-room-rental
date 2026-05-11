@@ -1,3 +1,4 @@
+// frontend/src/pages/Login.jsx
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -26,12 +27,12 @@ const Login = () => {
             alert('Đăng nhập thành công!');
             console.log('Dữ liệu User:', user);
 
-            // 3. Logic điều hướng dựa trên Role (Quyền)
-            if (user.role === 'admin') {
-                navigate('/admin'); // Vào thẳng trang quản trị
-            } else {
-                navigate('/'); // Khách hoặc Chủ nhà về trang chủ
-            }
+            // 3. Logic điều hướng MỚI (Tất cả về Trang chủ)
+            navigate('/'); 
+            
+            // Ép tải lại trang để Navbar cập nhật state có Token
+            window.location.reload(); 
+            
         } catch (err) {
             if (err.response) {
                 alert(err.response.data.message || 'Email hoặc mật khẩu sai');
@@ -112,7 +113,7 @@ const Login = () => {
 
             <footer className="mt-8 text-center text-xs text-gray-400">
                 <p className="font-bold text-purple-600 mb-1">TroSmart</p>
-                <p>© 2025 TroSmart. Nền tảng thuê phòng hiện đại.</p>
+                <p>© 2026 TroSmart. Nền tảng thuê phòng hiện đại.</p>
             </footer>
         </div>
     );

@@ -1,4 +1,5 @@
-import React from 'react';
+// frontend/src/components/adminTable/RoomRow.jsx
+
 import StatusBadge from './StatusBadge';
 
 const RoomRow = ({ room, onApprove, onReject }) => {

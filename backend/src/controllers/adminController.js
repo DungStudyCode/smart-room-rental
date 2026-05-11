@@ -12,10 +12,20 @@ const { sleep } = require("../services/crawler/utils");
 let autoBotTask = null;
 let isBotRunning = false;
 
+// ĐÃ SỬA: Đổi toàn bộ URL mồi sang mbasic để cào nhẹ và không bị chặn
 const HUNTING_GROUNDS = [
-  "https://www.facebook.com/groups/phongtrodanang",
-  "https://www.facebook.com/groups/3230285527248786",
+  "https://mbasic.facebook.com/groups/phongtrodanang",
+  "https://mbasic.facebook.com/groups/3230285527248786",
+  "https://mbasic.facebook.com/groups/530603464195577/",
+  "https://mbasic.facebook.com/groups/246933925685884",
 ];
+
+// Hàm phụ trợ: Tự động ép URL nhập tay về dạng mbasic
+const convertToMBasic = (url) => {
+  if (!url) return url;
+  return url.replace('www.facebook.com', 'mbasic.facebook.com')
+            .replace('web.facebook.com', 'mbasic.facebook.com');
+};
 
 const extractVNPhone = (text) => {
   const matches = text.match(/(0[0-9\s\.\-]{9,13})/g);
@@ -30,57 +40,48 @@ const extractVNPhone = (text) => {
 };
 
 // --- HÀM LÕI: QUY TRÌNH CÀO & PHÂN TÍCH ---
-async function processScraping(url, isAuto = false) {
+async function processScraping(rawUrl, isAuto = false) {
+  const url = convertToMBasic(rawUrl); // Ép link về mbasic ngay lập tức
   const { browser, page } = await initBrowser();
   const savedRooms = [];
 
   try {
     const scrapedPosts = await scrapeFacebookGroup(page, url);
-    const maxPosts = scrapedPosts.length; // Duyệt toàn bộ số bài cào được
+    const maxPosts = scrapedPosts.length;
 
     for (let i = 0; i < maxPosts; i++) {
-      // Mở rộng kho: Auto lấy 5 bài/lần, Thủ công lấy 10 bài/lần
-      if (isAuto && savedRooms.length >= 5) break;
-      if (!isAuto && savedRooms.length >= 10) break;
+      // ĐÃ SỬA: Tăng số lượng bài lấy được (Manual: 20 bài, Auto: 10 bài)
+      if (isAuto && savedRooms.length >= 10) break;
+      if (!isAuto && savedRooms.length >= 20) break;
 
       const post = scrapedPosts[i];
       console.log(`\n--- ĐANG XỬ LÝ BÀI THỨ ${i + 1}/${maxPosts} ---`);
 
-      // 1. GÁC CỔNG THÔ (NỚI LỎNG HOÀN TOÀN)
-      // Chỉ cần bài viết CÓ HÌNH ẢNH hoặc CÓ SỐ ĐIỆN THOẠI là lụm ngay!
       let finalPhone = extractVNPhone(post.text);
       const hasImages = post.images && post.images.length > 0;
       const hasPhone = finalPhone && finalPhone.length === 10;
 
       if (!hasImages && !hasPhone) {
         console.log("⚠️ BỎ QUA: Bài viết trắng trơn (Không ảnh, Không SĐT).");
-        continue; // Đỡ tốn công gọi AI
+        continue;
       }
 
-      // 2. GỌI AI PHÂN TÍCH ĐỂ LẤY THÔNG TIN CHUẨN FORM
       console.log("⏳ Đang gửi AI phân tích (thỏa mãn điều kiện thu thập)...");
       const parsedData = await parseRoomData(post.text);
-      await sleep(8000); // Nhường đường cho API Google thở
+      await sleep(8000); 
 
-      // 3. XỬ LÝ DỮ LIỆU ĐỂ LƯU
-      // Xóa hoàn toàn việc kiểm tra parsedData.confidence_score!
-
-      // Chắt lọc lại SĐT từ AI nếu Regex phía trên bị sót
       if (!hasPhone && parsedData?.phone) {
         const aiPhone = String(parsedData.phone).replace(/\D/g, "");
         if (aiPhone.length === 10) finalPhone = aiPhone;
       }
 
-      // Chống lỗi undefined nếu AI bóc tách thất bại, tự động gán dữ liệu mặc định
-      finalPhone =
-        finalPhone && finalPhone.length === 10 ? finalPhone : "Inbox Facebook";
+      finalPhone = finalPhone && finalPhone.length === 10 ? finalPhone : "Inbox Facebook";
       const price = parsedData?.price || 0;
       const area = parsedData?.area || 20;
       const address = parsedData?.address || "Đang cập nhật địa chỉ";
       const title = parsedData?.title || `Phòng trọ thu thập tự động`;
       const amenities = parsedData?.amenities || [];
 
-      // Bộ lọc chống trùng bài
       const filter = post.postUrl
         ? { postUrl: post.postUrl }
         : { description: post.text.substring(0, 50) };
@@ -104,9 +105,7 @@ async function processScraping(url, isAuto = false) {
         new: true,
       });
       savedRooms.push(savedDoc);
-      console.log(
-        `✅ LƯU DB THÀNH CÔNG: SĐT: ${finalPhone} | ${post.images.length} Ảnh`
-      );
+      console.log(`✅ LƯU DB THÀNH CÔNG: SĐT: ${finalPhone} | ${post.images.length} Ảnh`);
     }
   } catch (error) {
     console.error(`❌ Lỗi quá trình Scraping:`, error.message);
@@ -118,7 +117,7 @@ async function processScraping(url, isAuto = false) {
 }
 
 // ==========================================
-// API ENDPOINTS CỦA BẠN (GIỮ NGUYÊN)
+// API ENDPOINTS 
 // ==========================================
 const runCrawlerBot = async (req, res) => {
   if (!req.body.url)
@@ -144,13 +143,11 @@ const autoRunCrawler = async (req, res) => {
   console.log(`\n🚀 [Auto-Pilot] Khởi động chu kỳ quét tự động...`);
   let totalSaved = 0;
   for (const url of HUNTING_GROUNDS) {
-    if (totalSaved >= 5) break; // Giới hạn bot ngầm cào tối đa 5 bài/chu kỳ
+    if (totalSaved >= 10) break; 
     const rooms = await processScraping(url, true);
     totalSaved += rooms.length;
   }
-  console.log(
-    `\n🏁 [Auto-Pilot] Chu kỳ hoàn tất. Thu được ${totalSaved} tin mới.`
-  );
+  console.log(`\n🏁 [Auto-Pilot] Chu kỳ hoàn tất. Thu được ${totalSaved} tin mới.`);
 };
 
 const getPendingRooms = async (req, res) => {
@@ -175,8 +172,8 @@ const getAllUsers = async (req, res) => {
 
 const getAllRooms = async (req, res) => {
   try {
-    const { status } = req.query; // Lấy status từ query string (?status=PENDING)
-    const filter = status ? { status } : {}; // Nếu không có status thì lấy hết
+    const { status } = req.query; 
+    const filter = status ? { status } : {}; 
 
     const rooms = await Room.find(filter).sort({ createdAt: -1 });
     res.status(200).json(rooms);
@@ -262,6 +259,37 @@ const toggleAutoBot = (req, res) => {
 const getBotStatus = (req, res) =>
   res.status(200).json({ success: true, isRunning: isBotRunning });
 
+// ==========================================
+// 🔥 ĐÃ BỔ SUNG LẠI HÀM LẤY DATA THỐNG KÊ CHO ADMIN DASHBOARD 🔥
+// ==========================================
+const getAdminDashboardStats = async (req, res) => {
+  try {
+    // 1. Chạy đếm dữ liệu song song (Tối ưu tốc độ lấy data)
+    const [totalUsers, totalRooms, pendingRooms, activeRooms] = await Promise.all([
+      User.countDocuments(), 
+      Room.countDocuments(), 
+      Room.countDocuments({ status: 'PENDING' }), 
+      Room.countDocuments({ status: 'AVAILABLE' }) 
+    ]);
+
+    // 2. Trả về kết quả cho Frontend
+    res.status(200).json({
+      success: true,
+      data: {
+        totalUsers,
+        totalRooms,
+        pendingRooms,
+        activeRooms,
+        systemStatus: 'Hoạt động tốt'
+      }
+    });
+
+  } catch (error) {
+    console.error("Lỗi lấy thống kê Admin Dashboard:", error);
+    res.status(500).json({ success: false, message: 'Lỗi server khi tải dữ liệu admin' });
+  }
+};
+
 module.exports = {
   runCrawlerBot,
   autoRunCrawler,
@@ -272,5 +300,6 @@ module.exports = {
   deleteRoom,
   getAllUsers,
   getAllRooms,
-  updateRoomStatus
+  updateRoomStatus,
+  getAdminDashboardStats // Nhớ xuất khẩu hàm này ra để router dùng!
 };
